@@ -1,0 +1,56 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Provide sufficient contrast against white background */
+a {
+  color: #0366d6;
+}
+
+code {
+  color: #e01a76;
+}
+
+#chat-box{
+  background: red;
+  width: 800px;
+  margin: 80px auto;
+  margin-bottom: 0px;
+  height: 800px;
+  padding: 20px;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: darkred red;
+  border-radius: 20px;
+}
+
+/*
+#chat-input{
+ 
+}
+
+.chat-box-wrapper{
+}*/
+
+#online-chatters-box{
+  border: 3px black solid;
+}
+
+.chat-message-p1{
+  background: purple;
+  border-radius: 20px;
+  font-size: 15px;
+  display: inline-block;
+  padding: 2px 8px;
+}
+
+.msg-time{
+  font-size: 12px;
+  line-height: 15px;
+  margin-bottom: 7px;
+  margin-left: 10px;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
