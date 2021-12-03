@@ -1,15 +1,5 @@
 import { Component } from '@angular/core';
 
-@Component({
-  selector: 'app-chat',
-  templateUrl: './chat.component.html',
-})
-export class ChatComponent {
-
-  user: object = {};  
-
-}
-
 
 
 type Chatter = {
@@ -18,7 +8,6 @@ type Chatter = {
   name: string;
 }
 
-
 type Message = {
   content: string;
   time: number;
@@ -26,7 +15,29 @@ type Message = {
 
 type Chat = {
   isChatting: boolean;
-  secondChatter: Chatter;
+  secondChatter: Chatter | null;
   chatterList: Chatter[];
   chattersOnline: number;
+  messageList: Message[];
+} | null;
+
+
+@Component({
+  selector: 'app-chat',
+  templateUrl: './chat.component.html',
+})
+export class ChatComponent {
+
+
+  public clientChatObject: Chat = {
+    isChatting: true,
+    secondChatter: null,
+    chatterList: [],
+    chattersOnline: 0,
+    messageList: []
+  };  
+
 }
+
+
+
