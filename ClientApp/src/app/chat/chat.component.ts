@@ -19,7 +19,7 @@ type Chat = {
   chatterList: Chatter[];
   chattersOnline: number;
   messageList: Message[];
-} | null;
+};
 
 
 @Component({

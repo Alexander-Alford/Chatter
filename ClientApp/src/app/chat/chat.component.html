@@ -1,9 +1,8 @@
 <h1>Chat with anyone</h1>
 
-<p>test</p>
 
 <div>
-    <div *ngIf="clientChatObject !== null && clientChatObject.isChatting !== false">
+    <div *ngIf="clientChatObject.isChatting !== false">
         Available to chat:
         <div id="online-chatters-box">
             <span class="badge bg-primary">joe</span>
@@ -11,7 +10,7 @@
             <span class="badge bg-primary">jimmy</span>
             <span class="badge bg-primary">joseph</span>
             <span class="badge bg-primary">jack</span>
-            <button class="badge bg-primary" *ngFor="let chatter of clientChatObject.chatterList">{{chatter.name}}</button>
+            <button class="badge bg-danger" *ngFor="let chatter of clientChatObject.chatterList">{{chatter.name}}</button>
         </div>
     </div>
 
@@ -22,7 +21,7 @@
                 <div class="chat-message-p1">Test </div>
                 <div class="msg-time">1 Dec, 2021 6:11:14 PM</div>
             </div>
-            <div *ngFor="let msg in messageList">
+            <div *ngFor="let msg of clientChatObject.messageList">
                 <div class="chat-message-p1">{{msg.content}}</div>
                 <div class="msg-time">{{msg.time}}</div>
             </div>
