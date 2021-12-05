@@ -16,7 +16,11 @@ export class SignInComponent {
 
   public async manageUser(user: string|null, pass: string|null, selector: "MAKE" | "LOG" ){
   
-    const sendObj: Object = {};
+    const sendObj: Object = {
+      Username: user,
+      Password: pass,
+      Selector: selector
+    };
 
     fetch("/api", 
     {
