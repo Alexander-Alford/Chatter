@@ -1,0 +1,24 @@
+<h1>Sign In</h1>
+
+<div>
+
+
+        <div class="mb-3">
+            <label for="exampleFormControlInput1" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="exampleFormControlInput1" maxlength="50" placeholder="name@example.com">
+        </div>
+
+        <label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
+        <div class="col-sm-10">
+            <input type="password" placeholder="Password" class="form-control" minlength="5" maxlength="30" id="inputPassword">
+        </div>
+
+        <div class="col-auto">
+            <button class="btn btn-primary mb-3" (click)="manageUser( usernameSubmit, passwordSubmit, 'LOG')">Confirm identity</button>
+            <button class="btn btn-primary mb-3" (click)="manageUser( 'test1', 'test2', 'MAKE')">Make Account</button>
+        </div>
+       
+   
+
+
+</div>
