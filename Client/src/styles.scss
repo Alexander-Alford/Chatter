@@ -2,3 +2,15 @@
 
 /* Importing Bootstrap SCSS file. */
 @import '~bootstrap/scss/bootstrap';
+
+html, body{
+    height: 100vh;
+}
+
+#sign-in-page{
+    max-width: 600px;
+}
+
+.signin-but{
+    margin-bottom: 0px !important; 
+}

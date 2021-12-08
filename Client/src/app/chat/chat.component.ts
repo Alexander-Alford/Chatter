@@ -1,14 +1,16 @@
 import { Component } from '@angular/core';
-
+//import { SignInComponent } from '../sign-in/sign-in.component';
 
 
 type Chatter = {
-  id: number;
-  color: string;
+  sessionToken: string;
+  primColor: string;
+  secColor: string;
   name: string;
 }
 
 type Message = {
+  author: string;
   content: string;
   time: number;
 }
@@ -30,7 +32,7 @@ export class ChatComponent {
 
 
   public clientChatObject: Chat = {
-    isChatting: true,
+    isChatting: false,
     secondChatter: null,
     chatterList: [],
     chattersOnline: 0,
