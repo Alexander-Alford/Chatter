@@ -2,7 +2,7 @@
     <main id="sign-in-page" class="col">
         <h1 class="text-center">{{isLoggedIn ? 'Sign Out' : 'Sign In'}}</h1>
     
-        <form>
+        <div>
             <div *ngIf="isLoggedIn === false">
                 <div class="mb-3">
                     <label for="exampleFormControlInput1" class="form-label">Email address</label>
@@ -21,13 +21,13 @@
                        <button class="btn btn-primary mb-3 signin-but col-6" (click)="postUser( 'test1', 'test2', 'MAKE')">Make Account</button>
                     </span>
                     <span *ngIf="isLoggedIn === true" class="btn-group">
-                       <button class="btn btn-primary mb-3 signin-but" (click)="deleteUser( '', 'LOGOUT')">Log Out</button>
-                       <button class="btn btn-danger mb-3 signin-but" (click)="deleteUser( '', 'DELETE')">Delete Account</button>
+                       <button type="button" class="btn btn-primary mb-3 btn-lg signin-but" (click)="deleteUser( '', 'LOGOUT')">Log Out</button>
+                       <button type="button" class="btn btn-danger mb-3 btn-lg signin-but" (click)="deleteUser( '', 'DELETE')">Delete Account</button>
                     </span>
                 
             </div>
 
 
-        </form>
+        </div>
     </main>
 </div>

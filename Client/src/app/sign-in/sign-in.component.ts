@@ -22,7 +22,7 @@ export class SignInComponent {
       Selector: selector
     };
 
-    fetch("/api", 
+    fetch("http://127.0.0.1:500/api/signin", 
     {
       method: 'POST',
       body: JSON.stringify(request),
