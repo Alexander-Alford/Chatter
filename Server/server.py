@@ -1,10 +1,39 @@
+#Modules for handling environment variables.
+import os
+from dotenv import load_dotenv
 #Flask modules for http routing, requests, and responses.
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+import boto3
+
+
+
+
 app = Flask(__name__)
 CORS(app)
+load_dotenv()
 
+#AWS database environment variables.
+DB_NAME = os.environ.get("AWS_DBNAME")
+DB_ENDPOINT = os.environ.get("AWS_ENDPOINT")
+DB_PORT = os.environ.get("AWS_PORT")
+DB_REGION = os.environ.get("AWS_REGION")
+DB_USERNAME = os.environ.get("AWS_USER")
+DB_PASSWORD = os.environ.get("")
+
+
+os.environ['LIBMYSQL_ENABLE_CLEARTEXT_PLUGIN'] = '1'
+
+#gets the credentials from .aws/credentials
+session = boto3.Session()
+client = session.client()
+
+token = client.generate_db_auth_token(DBHostname=DB_ENDPOINT, Port=DB_PORT, DBUsername=DB_USERNAME, Region=DB_REGION) 
+
+
+
+#Server variables.
 client = ''
 host = '127.0.0.1'
 port = 500
