@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-import boto3
-
+#import boto3
+import mysql.connector
 
 
 
@@ -20,17 +20,67 @@ DB_ENDPOINT = os.environ.get("AWS_ENDPOINT")
 DB_PORT = os.environ.get("AWS_PORT")
 DB_REGION = os.environ.get("AWS_REGION")
 DB_USERNAME = os.environ.get("AWS_USER")
-DB_PASSWORD = os.environ.get("")
+DB_PASSWORD = os.environ.get("AWS_PASSWORD")
 
 
-os.environ['LIBMYSQL_ENABLE_CLEARTEXT_PLUGIN'] = '1'
+#os.environ['LIBMYSQL_ENABLE_CLEARTEXT_PLUGIN'] = '1'
 
-#gets the credentials from .aws/credentials
-session = boto3.Session()
-client = session.client()
 
-token = client.generate_db_auth_token(DBHostname=DB_ENDPOINT, Port=DB_PORT, DBUsername=DB_USERNAME, Region=DB_REGION) 
 
+sql_database = mysql.connector.connect(
+  host=DB_ENDPOINT,
+  user=DB_USERNAME,
+  password=DB_PASSWORD
+)
+
+Cursor = sql_database.cursor()
+
+Cursor.execute("SHOW DATABASES")
+
+#for x in Cursor:
+#  print(x) 
+
+sqllist = Cursor.fetchall()
+
+print(sqllist)
+
+test = [ x[0] for x in sqllist ] 
+
+print(test)
+
+
+if "ChatterDB" in test:
+    print("One")
+else:
+    Cursor.execute("CREATE DATABASE ChatterDB")
+
+sql_database = mysql.connector.connect(
+  host=DB_ENDPOINT,
+  user=DB_USERNAME,
+  password=DB_PASSWORD,
+  database="ChatterDB"
+)
+
+Cursor = sql_database.cursor()
+
+Cursor.execute("SHOW TABLES")
+
+test = [ x[0] for x in Cursor.fetchall() ] 
+
+if "users" in test:
+    print("Two")    
+else:
+    Cursor.execute("CREATE TABLE users (username VARCHAR(50) NOT NULL, password VARCHAR(50) NOT NULL, primarycolor CHAR(7), secondarycolor CHAR(7), PRIMARY KEY(username))")
+
+if "chatlog" in test:
+    print("Three")
+else:
+    Cursor.execute("CREATE TABLE chatlog (sender VARCHAR(50), reciever VARCHAR(50), content TINYTEXT, timestamp INT UNSIGNED)")
+
+Cursor.execute("SHOW TABLES")
+
+for x in Cursor:
+    print(x)
 
 
 #Server variables.
@@ -56,16 +106,7 @@ class Chatter:
             return False
 
 
-#Wrapper class for all SQL functionality.
-class SQL_Wrapper:
-    def addNewUser(username, password):
-        pass
-    def deleteUser(username):
-        pass
-    def checkUserExists(username):
-        pass
-    def checkPassword(password):
-        pass
+
     
 
     
