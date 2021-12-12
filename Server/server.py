@@ -5,16 +5,20 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+from sql import SQL_Wrapper
+
 #import boto3
-import mysql.connector
+
+#import mysql.connector
 
 
 
 app = Flask(__name__)
 CORS(app)
-load_dotenv()
+
 
 #AWS database environment variables.
+load_dotenv()
 DB_NAME = os.environ.get("AWS_DBNAME")
 DB_ENDPOINT = os.environ.get("AWS_ENDPOINT")
 DB_PORT = os.environ.get("AWS_PORT")
@@ -25,62 +29,33 @@ DB_PASSWORD = os.environ.get("AWS_PASSWORD")
 
 #os.environ['LIBMYSQL_ENABLE_CLEARTEXT_PLUGIN'] = '1'
 
+#The primary wrapper that will be used to interact with the MySQL database.
+sqlWrapper = SQL_Wrapper(DB_ENDPOINT, DB_USERNAME, DB_PASSWORD)
 
 
-sql_database = mysql.connector.connect(
-  host=DB_ENDPOINT,
-  user=DB_USERNAME,
-  password=DB_PASSWORD
-)
-
-Cursor = sql_database.cursor()
-
-Cursor.execute("SHOW DATABASES")
-
-#for x in Cursor:
-#  print(x) 
-
-sqllist = Cursor.fetchall()
-
-print(sqllist)
-
-test = [ x[0] for x in sqllist ] 
-
-print(test)
 
 
-if "ChatterDB" in test:
-    print("One")
-else:
-    Cursor.execute("CREATE DATABASE ChatterDB")
 
-sql_database = mysql.connector.connect(
-  host=DB_ENDPOINT,
-  user=DB_USERNAME,
-  password=DB_PASSWORD,
-  database="ChatterDB"
-)
+#sqlWrapper.showTable("users")
+#sqlWrapper.addNewUser("test1", "123", "#FFFFFF", "#AAAAAA")
+#sqlWrapper.showTable("users")
+#sqlWrapper.addNewUser("test2", "123", "#FFFFFF", "#AAAAAA")
+#sqlWrapper.showTable("users")
+#sqlWrapper.deleteUser("test2")
+#sqlWrapper.showTable("users")
+#sqlWrapper.addNewUser("test2", "123", "#FFFFFF", "#AAAAAA")
+#sqlWrapper.showTable("users")
 
-Cursor = sql_database.cursor()
+#sqlWrapper.addChatMessage("test3", "test4", "This is another one.", "2234567890")
+#sqlWrapper.showTable("chatlog")
+#sqlWrapper.addChatMessage("test4", "test3", "Testing.", "0234567890")
+sqlWrapper.showTable("users")
 
-Cursor.execute("SHOW TABLES")
-
-test = [ x[0] for x in Cursor.fetchall() ] 
-
-if "users" in test:
-    print("Two")    
-else:
-    Cursor.execute("CREATE TABLE users (username VARCHAR(50) NOT NULL, password VARCHAR(50) NOT NULL, primarycolor CHAR(7), secondarycolor CHAR(7), PRIMARY KEY(username))")
-
-if "chatlog" in test:
-    print("Three")
-else:
-    Cursor.execute("CREATE TABLE chatlog (sender VARCHAR(50), reciever VARCHAR(50), content TINYTEXT, timestamp INT UNSIGNED)")
-
-Cursor.execute("SHOW TABLES")
-
-for x in Cursor:
-    print(x)
+#sqlWrapper.deleteUserConversations("test")
+sqlWrapper.showTable("chatlog")
+print(sqlWrapper.readUserData("test1"))
+print(sqlWrapper.readConversationLog("test3", "test4"))
+#sqlWrapper.deleteDatabase("ChatterDB")
 
 
 #Server variables.
