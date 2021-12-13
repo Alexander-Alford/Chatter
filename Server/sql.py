@@ -28,6 +28,7 @@ class SQL_Wrapper:
               database="ChatterDB"
             )
         
+        print("Connected to ChatterDB.")
         self.Cursor = self.sql_database.cursor()
 
         try:
@@ -79,6 +80,18 @@ class SQL_Wrapper:
             print("User '%s' was deleted."%username)
         except: 
             print("Could not delete user. User '%s' does not exist."%username)
+
+    def userExists(self, username):
+        try:
+            sql = "SELECT * FROM users WHERE username = %s"
+            self.Cursor.execute(sql, (username,))
+            buf = self.Cursor.fetchone()
+            if buf = None:
+                return False
+            else:
+                return True 
+        except:
+            print("Error trying to check if user %s exists"%username)
 
     def showTable(self, table_name):
         try:
@@ -138,8 +151,7 @@ class SQL_Wrapper:
             sql ="""SELECT *
                     FROM chatlog
                     WHERE (sender = %s AND receiver = %s) OR (sender = %s AND receiver = %s)
-                    ORDER BY timestamp ASC
-                    """
+                    ORDER BY timestamp ASC"""
             val = (userOne, userTwo, userTwo, userOne)
             self.Cursor.execute(sql, val)
             buf = self.Cursor.fetchall()
@@ -150,6 +162,26 @@ class SQL_Wrapper:
 
     def updatePrimaryColor(self, username, newcolor):
         try:
+            sql ="""UPDATE users
+                    SET primarycolor = %s 
+                    WHERE username = %s"""
+            val = (newcolor, username)
+            self.Cursor.execute(sql, val)
+            self.sql_database.commit()
+            print("User %s's primary color updated to %s"%(username, newcolor))
         except:
-            print("Could not update colors ")
+            print("Could not update %s's primary color")
+            return None
+
+    def updateSecondaryColor(self, username, newcolor):
+        try:
+            sql ="""UPDATE users
+                    SET secondarycolor = %s 
+                    WHERE username = %s"""
+            val = (newcolor, username)
+            self.Cursor.execute(sql, val)
+            self.sql_database.commit()
+            print("User %s's secondary color updated to %s"%(username, newcolor))
+        except:
+            print("Could not update %s's secondary color")
             return None
