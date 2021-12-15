@@ -36,32 +36,6 @@ DB_PASSWORD = os.environ.get("AWS_PASSWORD")
 sqlWrapper = SQL_Wrapper(DB_ENDPOINT, DB_USERNAME, DB_PASSWORD)
 
 
-#sqlWrapper.showTable("users")
-#sqlWrapper.addNewUser("test1", "123", "#FFFFFF", "#AAAAAA")
-#sqlWrapper.showTable("users")
-#sqlWrapper.addNewUser("test2", "123", "#FFFFFF", "#AAAAAA")
-#sqlWrapper.showTable("users")
-#sqlWrapper.deleteUser("test2")
-#sqlWrapper.showTable("users")
-#sqlWrapper.addNewUser("test2", "123", "#FFFFFF", "#AAAAAA")
-#sqlWrapper.showTable("users")
-
-#sqlWrapper.addChatMessage("test3", "test4", "This is another one.", "2234567890")
-#sqlWrapper.showTable("chatlog")
-#sqlWrapper.addChatMessage("test4", "test3", "Testing.", "0234567890")
-#sqlWrapper.showTable("users")
-
-#sqlWrapper.deleteUserConversations("test")
-#sqlWrapper.showTable("chatlog")
-#print("User test1 Data:")
-#print(sqlWrapper.readUserData("test1"))
-#print("Conversation between test3 and test4:")
-#print(sqlWrapper.readConversationLog("test3", "test4"))
-#sqlWrapper.updatePrimaryColor("test2", "#BBBBBB")
-#sqlWrapper.updateSecondaryColor("test2", "#BBBBBB")
-#print("User test1 Data:")
-#print(sqlWrapper.readUserData("test1"))
-#sqlWrapper.deleteDatabase("ChatterDB")
 
 
 #Server variables.
@@ -79,6 +53,7 @@ class Chatter:
         self.authenticationToken = authToken
         self.isChatting = False
         self.chattingWith = None
+        self.timeToLive = 1800
     
 
 #Class for primary server object that will handle all CRUD operations along with
@@ -89,25 +64,50 @@ class ServerSession:
     
     #Returns false if user is not in chattersOnlineList and returns the chatter if they are.
     def userOnline(self, username):
-
+        for chatter in self.chattersOnlineList:
+            if chatter.username == username:
+                return True
+        return False
+            
 
     #Generates a new 100 character session token for a user.
     def createSessionToken(self):
         newToken = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(100))
         return newToken
+    
+    def getUserToken(self, username):
+        for chatter in self.chattersOnlineList:
+            if chatter.username == username:
+                return chatter.authenticationToken
+        return None
+
 
     #Returns the authentication token if a log in is successful.
     def handleLogIn(self, username, password):
         if sqlWrapper.userExists(username) == True:
             userbuf = sqlWrapper.readUserData(username)
             if userbuf[1] == password:
-                token = createSessionToken()
-                self.chattersOnlineList.append( Chatter(usebuf[0], usebuf[2], usebuf[3], token) )
+                print(userbuf)
+                token = self.createSessionToken()
+                self.chattersOnlineList.append( Chatter(userbuf[0], userbuf[2], userbuf[3], token) )
                 return token
             else:
                 return "Password is incorrect."
         else:
             return "User does not exist."
+
+    def handleLogOff(self, username, token):
+        print("Log off for %s"%username)
+        for chatter in self.chattersOnlineList:
+            if chatter.username == username:
+                print("Username")
+                if chatter.authenticationToken == token:
+                    print("Authent")
+                    self.chattersOnlineList.pop(index(chatter))
+                    print("Popped")
+                    return True
+                else:
+                    return False
 
     #If name is taken return false, otherwise add a new user with default colors and return true.
     def addNewUser(self, username, password):
@@ -115,6 +115,7 @@ class ServerSession:
             sqlWrapper.addNewUser(username, password, "#FFFFFF", "#000000")
             return True
         else:
+            print("Error making new user '%s'. User already exists."%username)
             return False
 
     #Returns true upon successful deletion of a user; false if user does not exist.
@@ -126,7 +127,7 @@ class ServerSession:
             return False
     
 
-    
+serverMain = ServerSession()
 
 
     
@@ -134,11 +135,58 @@ class ServerSession:
 
 
 
-@app.route('/api/signin', methods=['GET', 'POST'])
-def welcome():
-    print('Hit on the sign-in api.')
-    return "Hello World!"
+@app.route('/api/signin', methods=['POST', 'DELETE'])
+def handleSignInRoute():
+    try:
+        print('POST on the sign-in api.')
+        req = request.json
+        detail = 'null'
+        res = 'null'
     
+        if req["Selector"] == "LOGIN":
+            #print("Login request.")
+            if serverMain.userOnline(req["Username"]) != True:
+                detail = serverMain.handleLogIn(req["Username"], req["Password"])
+                if len(detail) == 100:
+                    res = 'success'
+                else:
+                    res = 'failure'
+                    
+            else:
+                detail = 'Account is already logged in on another computer.'
+                res = 'failure'
+
+        elif req["Selector"] == "MAKE":
+            #print("Make request.")
+            if serverMain.addNewUser(req["Username"], req["Password"]) == True:
+                detail = 'User created successfully.'
+                res = 'success'
+            else:
+                detail = 'Username is already in use.'
+                res = 'failure'
+
+        elif req["Selector"] == "LOGOUT":
+            if serverMain.userOnline(req["Username"]) == True:
+                if serverMain.handleLogOff(req["Username"], req["SessToken"]) == True:
+                    detail = 'User successfully logged out.'
+                    res = 'success'
+                else:
+                    detail = 'Authentication failed.'
+                    res = 'failure'
+            else:
+                detail = 'User is not currently logged in.'
+                res = 'failure'
+    
+        return jsonify({'result':res, 'detail':detail})
+
+    except:
+        return "Error!"
+    
+@app.route('/api/account', methods=['PATCH'])
+def handleColorUpdate():
+    print('Hit on the account api.')
+    return "Color!"
+
 @app.route('/api/chatroom', methods=['GET', 'POST'])
 def manageChat():
     print('Hit on the chat room api.')

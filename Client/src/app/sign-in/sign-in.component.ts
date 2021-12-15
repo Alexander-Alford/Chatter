@@ -33,14 +33,15 @@ export class SignInComponent {
     .catch((error) => { console.log('Error: ', error); });
   }
 
-  public async deleteUser(credential: string|null, selector: "DELETE"|"LOGOUT"){
+  public async deleteUser(user: string|null, credential: string|null, selector: "DELETE"|"LOGOUT"){
   
     const request: Object = {
+      Username: user,
       SessToken: credential,
       Selector: selector
     };
 
-    fetch("/api", 
+    fetch("http://127.0.0.1:500/api/signin", 
     {
       method: 'DELETE',
       body: JSON.stringify(request),

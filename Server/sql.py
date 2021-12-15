@@ -86,7 +86,7 @@ class SQL_Wrapper:
             sql = "SELECT * FROM users WHERE username = %s"
             self.Cursor.execute(sql, (username,))
             buf = self.Cursor.fetchone()
-            if buf = None:
+            if buf == None:
                 return False
             else:
                 return True 
