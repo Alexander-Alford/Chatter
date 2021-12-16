@@ -98,16 +98,20 @@ class ServerSession:
 
     def handleLogOff(self, username, token):
         print("Log off for %s"%username)
+        x = -1
         for chatter in self.chattersOnlineList:
+            x = x + 1
             if chatter.username == username:
                 print("Username")
                 if chatter.authenticationToken == token:
                     print("Authent")
-                    self.chattersOnlineList.pop(index(chatter))
+                    print(x)
+                    self.chattersOnlineList.pop(x)
                     print("Popped")
                     return True
                 else:
                     return False
+        return False
 
     #If name is taken return false, otherwise add a new user with default colors and return true.
     def addNewUser(self, username, password):
@@ -118,18 +122,52 @@ class ServerSession:
             print("Error making new user '%s'. User already exists."%username)
             return False
 
-    #Returns true upon successful deletion of a user; false if user does not exist.
-    def deleteUser(self, username):
+    #Returns true upon successful deletion of a user; otherwise an error message is returned.
+    def deleteUser(self, username, token):
         if sqlWrapper.userExists(username) == True:
-            sqlWrapper.deleteUser(username)
-            return True
+            if self.getUserToken(username) == token:
+                sqlWrapper.deleteUser(username)
+                sqlWrapper.deleteUserConversations(username)
+                return True
+            else:
+                return "Error. Authentication failed."
         else:
-            return False
+            return "Error. User does not exist."
     
+    def updateUserColors(self, username, token, priCol, secCol):
+        if sqlWrapper.userExists(username) == True:
+            if self.userOnline(username) == True:
+                if self.getUserToken(username) == token:
+                    if len(priCol) <= 7 and len(secCol) <= 7:
+                        sqlWrapper.updatePrimaryColor(username, priCol)
+                        sqlWrapper.updateSecondaryColor(username, secCol)
+                        return True
+                    else:
+                        return "Error, bad color values."
+                else:
+                    return "Error, authentication failure."
+            else:
+                return "Error, user is not online."
+        else:
+            return "Error. User does not exist."
 
+    #grabs a list of messages between two users at the request of one of them.
+    def getChatConversation(self, requestUser, targetUser, reqUserToken):
+        if sqlWrapper.userExists(requestUser) == True and sqlWrapper.userExists(targetUser) == True:
+            if reqUserToken == self.getUserToken(requestUser):
+                convo = sqlWrapper.readConversationLog(requestUser, targetUser)
+                return convo
+            else:
+                return "Authentication failed."
+        else:
+            return "One of the users does not exist."
+
+    
+#The primary server object that manages every online user and interacts with the database.
 serverMain = ServerSession()
 
-
+sqlWrapper.showTable("users")
+sqlWrapper.showTable("chatlog")
     
 
 
@@ -166,7 +204,9 @@ def handleSignInRoute():
                 res = 'failure'
 
         elif req["Selector"] == "LOGOUT":
+            #print("HERE0")
             if serverMain.userOnline(req["Username"]) == True:
+                #print("HERE1")
                 if serverMain.handleLogOff(req["Username"], req["SessToken"]) == True:
                     detail = 'User successfully logged out.'
                     res = 'success'
@@ -176,6 +216,23 @@ def handleSignInRoute():
             else:
                 detail = 'User is not currently logged in.'
                 res = 'failure'
+        
+        elif req["Selector"] == "DELETE":
+            if serverMain.userOnline(req["Username"]) == True:
+                #print("HERE")
+                detail = serverMain.deleteUser(req["Username"], req["SessToken"])
+                #print("HERE1")
+                if detail == True:
+                    #print("HERE2")
+                    serverMain.handleLogOff(req["Username"], req["SessToken"])
+                   # print("HERE3")
+                    detail = "User successfully deleted."
+                    res = "success"
+                else:
+                    res = "failure"
+            else:
+                detail = 'User must be logged in to delete account.'
+                res = 'failure'
     
         return jsonify({'result':res, 'detail':detail})
 
@@ -184,13 +241,55 @@ def handleSignInRoute():
     
 @app.route('/api/account', methods=['PATCH'])
 def handleColorUpdate():
+    
     print('Hit on the account api.')
-    return "Color!"
+
+    req = request.json
+    detail = 'null'
+    res = 'null'
+
+    try:
+        detail = serverMain.updateUserColors(req["Username"], req["SessToken"], req["PrimaryColor"], req["SecondaryColor"])
+        if detail == True:
+            detail = "Colors updated to %s and %s"%(req["PrimaryColor"], req["SecondaryColor"])
+            res = "success"
+        else:
+            res = "failure"
+        return jsonify({'result':res, 'detail':detail})
+
+    except:
+        return "Error!"
 
 @app.route('/api/chatroom', methods=['GET', 'POST'])
 def manageChat():
-    print('Hit on the chat room api.')
-    return "Hello World!"
+    print('Hit on the chatroom api.')
+
+    req = request.json
+    res = 'null'
+    dat = 'null'
+
+    try:
+        if req["Selector"] == "CHATLOG":
+            dat = serverMain.getChatConversation(req["reqUser"], req["targetUser"], req["SessToken"])
+            if isinstance(dat, list):
+                res = "success"
+            else:
+                res = "failure"
+        
+        elif req["Selector"] == "CHATTERLIST":
+            chatterlist = []
+            print("HERE")
+            for chatter in serverMain.chattersOnlineList:
+                print("HERE2")
+                chatterlist.append( {'name':str(chatter.username), 'color':str(chatter.primaryColor), 'background':str(chatter.secondaryColor), 'inChat':str(chatter.isChatting)} )
+            print("HERE3")
+            dat = chatterlist
+            res = "update"
+
+        return jsonify({'data':dat, 'result':res})
+
+    except:
+        return "Error!"
 
 
 
