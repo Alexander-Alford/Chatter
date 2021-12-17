@@ -10,6 +10,7 @@ import { SignInComponent } from './sign-in/sign-in.component';
 import { ChatComponent } from './chat/chat.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
+
 @NgModule({
   declarations: [
     AppComponent,
