@@ -162,6 +162,14 @@ class ServerSession:
         else:
             return "One of the users does not exist."
 
+    def getUsernameBySessToken(self, token):
+        index = -1
+        for chatter in self.chattersOnlineList:
+            index = index + 1
+            if chatter.authenticationToken == token:
+                return chatter.username
+        return None
+
     
 #The primary server object that manages every online user and interacts with the database.
 serverMain = ServerSession()
@@ -268,23 +276,27 @@ def manageChat():
     res = 'null'
     dat = 'null'
 
+    print(req)
+
     try:
-        if req["Selector"] == "CHATLOG":
+        if req == None:
+            chatterlist = []
+            print("HERE")
+            for chatter in serverMain.chattersOnlineList:
+                print("HERE2")
+                chatterlist.append( {'name':str(chatter.username), 'primColor':str(chatter.primaryColor), 'secColor':str(chatter.secondaryColor), 'inChat':str(chatter.isChatting)} )
+            print("HERE3")
+            dat = chatterlist
+            res = "update"
+
+        elif req["Selector"] == "CHATLOG":
             dat = serverMain.getChatConversation(req["reqUser"], req["targetUser"], req["SessToken"])
             if isinstance(dat, list):
                 res = "success"
             else:
                 res = "failure"
         
-        elif req["Selector"] == "CHATTERLIST":
-            chatterlist = []
-            print("HERE")
-            for chatter in serverMain.chattersOnlineList:
-                print("HERE2")
-                chatterlist.append( {'name':str(chatter.username), 'color':str(chatter.primaryColor), 'background':str(chatter.secondaryColor), 'inChat':str(chatter.isChatting)} )
-            print("HERE3")
-            dat = chatterlist
-            res = "update"
+        
 
         return jsonify({'data':dat, 'result':res})
 

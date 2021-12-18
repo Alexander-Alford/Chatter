@@ -3,16 +3,14 @@
         <h1 class="text-center">Chat With Anyone!</h1>
 
 
-        <div>
-            <div *ngIf="clientChatObject.isChatting !== false">
+        <div *ngIf="getCookie('SessToken') !== null">
+            <div *ngIf="clientChatObject.isChatting === false">
                 Available to chat:
                 <div id="online-chatters-box">
-                    <span class="badge bg-primary">joe</span>
-                    <span class="badge bg-primary">john</span>
-                    <span class="badge bg-primary">jimmy</span>
-                    <span class="badge bg-primary">joseph</span>
-                    <span class="badge bg-primary">jack</span>
-                    <button class="badge bg-danger" *ngFor="let chatter of clientChatObject.chatterList">{{chatter.name}}</button>
+                    <span *ngFor="let chatter of clientChatObject.chatterList">
+                        <button class="badge" [style.background-color]=chatter.secColor [style.color]=chatter.primColor>{{chatter.name}}</button>
+                    </span>
+                    
                 </div>
             </div>
 
@@ -39,5 +37,6 @@
                 </div>
             </div>
         </div>
+
     </main> 
 </div>
