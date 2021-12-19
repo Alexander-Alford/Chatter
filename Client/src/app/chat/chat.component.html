@@ -3,15 +3,25 @@
         <h1 class="text-center">Chat With Anyone!</h1>
 
 
-        <div *ngIf="getCookie('SessToken') !== null">
+        <div *ngIf="clientChatObject.selfUsername !== null">
             <div *ngIf="clientChatObject.isChatting === false">
-                Available to chat:
+                Available to chat: {{clientChatObject.chattersOnline - 1}}
                 <div id="online-chatters-box">
                     <span *ngFor="let chatter of clientChatObject.chatterList">
-                        <button class="badge" [style.background-color]=chatter.secColor [style.color]=chatter.primColor>{{chatter.name}}</button>
+                        <button *ngIf="chatter.name !== clientChatObject.selfUsername" class="badge" [style.background-color]=chatter.secColor [style.color]=chatter.primColor>{{chatter.name}}</button>
                     </span>
                     
                 </div>
+            </div>
+
+            <div>
+                <label for="primary color" class="form-label">Primary Color</label>
+                <input type="color" class="form-control form-control-color" id="prim-color" value="#563d7c" title="Choose your color">
+                
+                <label for="secondary color" class="form-label">Secondary Color</label>
+                <input type="color" class="form-control form-control-color" id="sec-color" value="#563d7c" title="Choose your color">
+
+                <button class="btn btn-primary">Save Colors</button>
             </div>
 
             <div *ngIf="clientChatObject.isChatting !== false" class="chat-box-wrapper">

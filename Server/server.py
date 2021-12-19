@@ -51,16 +51,25 @@ class Chatter:
         self.secondaryColor = secCol
         self.username = name
         self.authenticationToken = authToken
-        self.isChatting = False
+       # self.isChatting = False
         self.chattingWith = None
         self.timeToLive = 1800
     
+class ChatRequest:
+    def __init__(self, reqUser, recUser, reqToken, recToken):
+        self.requester = reqUser
+        self.receiver = recUser
+        self.requestToken = reqToken
+        self.receiveToken = recToken
+
+
 
 #Class for primary server object that will handle all CRUD operations along with
 #user conversations and accounts.
 class ServerSession:
     def __init__(self):
         self.chattersOnlineList = []
+        self.chatrequests = []
     
     #Returns false if user is not in chattersOnlineList and returns the chatter if they are.
     def userOnline(self, username):
@@ -68,7 +77,12 @@ class ServerSession:
             if chatter.username == username:
                 return True
         return False
-            
+
+   # def userIsChatting(self, username):
+     #   for chatter in self.chattersOnlineList:
+     #       if chatter.isChatting == True:
+     #           return True
+     #   return False        
 
     #Generates a new 100 character session token for a user.
     def createSessionToken(self):
@@ -138,7 +152,7 @@ class ServerSession:
         if sqlWrapper.userExists(username) == True:
             if self.userOnline(username) == True:
                 if self.getUserToken(username) == token:
-                    if len(priCol) <= 7 and len(secCol) <= 7:
+                    if len(priCol) == 7 and len(secCol) == 7:
                         sqlWrapper.updatePrimaryColor(username, priCol)
                         sqlWrapper.updateSecondaryColor(username, secCol)
                         return True
@@ -162,6 +176,7 @@ class ServerSession:
         else:
             return "One of the users does not exist."
 
+    #Uses auth token to get online user. Returns their name.
     def getUsernameBySessToken(self, token):
         index = -1
         for chatter in self.chattersOnlineList:
@@ -169,6 +184,28 @@ class ServerSession:
             if chatter.authenticationToken == token:
                 return chatter.username
         return None
+    
+    def handleChatRequest(self, reqUser, reqToken, recUser):
+        if self.userOnline(reqUser) == True or self.userOnline(recUser):
+            if self.getUserToken(reqUser) == reqToken:
+                for chatReq in self.chatrequests:
+                    #If someone is looking to chat with reqUser and they are the receiving user of this call.
+                    if chatReq.receiver == reqUser and chatReq.requester == recUser:
+                        chatReq.receiveToken = reqToken
+                        return "Chat between %s and %s started."%(recUser, reqUser)
+                    #Change other chat request by same user if it exists and isn't an ongoing chat.
+                    elif chatReq.requester == reqUser and chatReq.receiveToken = None:
+                        chatReq.receiver = recUser
+                        return "Chat invite by %s for another user has changed to be with %s"%(reqUser, recUser)
+                #If no one is trying to chat with reqUser and he has no outgoing invites, add a new invite to the chatrequest list and return true.
+                self.chatrequests.append( ChatRequest(reqUser, recUser, reqToken, None) )
+                return True
+            else:
+                return "Error! User authentication failed."
+        else:
+            return "Error! Offline users cannot start chats."
+    
+
 
     
 #The primary server object that manages every online user and interacts with the database.
@@ -281,11 +318,9 @@ def manageChat():
     try:
         if req == None:
             chatterlist = []
-            print("HERE")
+
             for chatter in serverMain.chattersOnlineList:
-                print("HERE2")
                 chatterlist.append( {'name':str(chatter.username), 'primColor':str(chatter.primaryColor), 'secColor':str(chatter.secondaryColor), 'inChat':str(chatter.isChatting)} )
-            print("HERE3")
             dat = chatterlist
             res = "update"
 
@@ -302,6 +337,40 @@ def manageChat():
 
     except:
         return "Error!"
+
+@app.route('/api/authcheck/<token>', methods=['GET'])
+def checkAuthToken(token):
+    print("Request to check auth token.")
+
+    res = "failure"
+    detail = "No user with auth token."
+    name = serverMain.getUsernameBySessToken(token)
+
+    if name != None:
+        res = "success"
+        detail = name
+
+    print(res)
+    return jsonify({'data':detail, 'result':res})
+
+@app.route('/api/color/<username>', methods=['GET'])
+def getColors(username):
+    print("Request for colors.")
+
+    userdata = sqlWrapper.readUserData
+
+
+
+@app.route('/api/colorupdate', methods=['PATCH'])
+def updateColors():
+    print("Request to update colors.")
+    
+    req = request.json
+    result = ""
+    detail = serverMain.updateUserColors(req["Username"], req["SessToken"], req[""])
+
+
+
 
 
 

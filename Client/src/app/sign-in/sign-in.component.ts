@@ -8,7 +8,7 @@ import { Component, OnInit } from '@angular/core';
 
 
 
-export class SignInComponent{
+export class SignInComponent implements OnInit{
 
   public usernameSubmit: string | null = "";
   public passwordSubmit: string | null = "";
@@ -41,6 +41,31 @@ export class SignInComponent{
     }
     else {
       return null;
+    }
+  }
+
+  public async checkIfAuthIsGood(){
+
+    let filteredtoken = this.getCookie("SessToken");
+    if(filteredtoken === null || filteredtoken === ""){
+      filteredtoken = "0";
+    }
+
+
+    let res: any;
+
+    await fetch("http://127.0.0.1:500/api/authcheck/" + filteredtoken)
+    .then((response) => response.json())
+    .then((data) => res = data)
+
+    if(res.result === "success"){
+      this.isLoggedIn = true;
+      this.usernameSubmit = res.data;
+      return true;
+    }
+    else{
+      this.isLoggedIn = false;
+      return false;
     }
   }
 
@@ -99,6 +124,7 @@ export class SignInComponent{
     if(responseJSON!.result === "success"){
       document.cookie = "SessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
       this.isLoggedIn = false;
+      this.usernameSubmit = "";
     }
     
     (responseJSON!.result === "success") ? (this.lastAPIresult = 'success') : (this.lastAPIresult = 'failure')
@@ -107,6 +133,8 @@ export class SignInComponent{
   }
 
  
-
+  ngOnInit(): void {
+    this.checkIfAuthIsGood();
+  }
 
 }

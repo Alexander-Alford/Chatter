@@ -16,6 +16,7 @@ type Message = {
 }
 
 type Chat = {
+  selfUsername: string | null;
   isChatting: boolean;
   secondChatter: Chatter | null;
   chatterList: Chatter[];
@@ -30,8 +31,10 @@ type Chat = {
 })
 export class ChatComponent implements OnInit {
 
+  
 
   public clientChatObject: Chat = {
+    selfUsername: null,
     isChatting: false,
     secondChatter: null,
     chatterList: [],
@@ -58,6 +61,28 @@ export class ChatComponent implements OnInit {
     }
   }
 
+  public async checkIfAuthIsGood(){
+
+    let filteredtoken = this.getCookie("SessToken");
+    if(filteredtoken === null || filteredtoken === ""){
+      filteredtoken = "0";
+    }
+
+
+    let res: any;
+
+    await fetch("http://127.0.0.1:500/api/authcheck/" + filteredtoken)
+    .then((response) => response.json())
+    .then((data) => res = data)
+
+    if(res.result === "success"){
+      this.clientChatObject.selfUsername = res.data;
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
 
   async getChatterList(){
 
@@ -73,9 +98,11 @@ export class ChatComponent implements OnInit {
   
   
     this.clientChatObject.chatterList = response.data;
+    this.clientChatObject.chattersOnline = this.clientChatObject.chatterList.length;
   }
 
   ngOnInit(): void {
+    this.checkIfAuthIsGood();
     this.getChatterList();
   }
 
