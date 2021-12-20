@@ -51,7 +51,7 @@ class Chatter:
         self.secondaryColor = secCol
         self.username = name
         self.authenticationToken = authToken
-       # self.isChatting = False
+        self.isChatting = False
         self.chattingWith = None
         self.timeToLive = 1800
     
@@ -194,7 +194,7 @@ class ServerSession:
                         chatReq.receiveToken = reqToken
                         return "Chat between %s and %s started."%(recUser, reqUser)
                     #Change other chat request by same user if it exists and isn't an ongoing chat.
-                    elif chatReq.requester == reqUser and chatReq.receiveToken = None:
+                    elif chatReq.requester == reqUser and chatReq.receiveToken == None:
                         chatReq.receiver = recUser
                         return "Chat invite by %s for another user has changed to be with %s"%(reqUser, recUser)
                 #If no one is trying to chat with reqUser and he has no outgoing invites, add a new invite to the chatrequest list and return true.
@@ -293,8 +293,10 @@ def handleColorUpdate():
     detail = 'null'
     res = 'null'
 
+    username = serverMain.getUsernameBySessToken(req["SessToken"])
+
     try:
-        detail = serverMain.updateUserColors(req["Username"], req["SessToken"], req["PrimaryColor"], req["SecondaryColor"])
+        detail = serverMain.updateUserColors(username, req["SessToken"], req["PrimaryColor"], req["SecondaryColor"])
         if detail == True:
             detail = "Colors updated to %s and %s"%(req["PrimaryColor"], req["SecondaryColor"])
             res = "success"
@@ -318,11 +320,11 @@ def manageChat():
     try:
         if req == None:
             chatterlist = []
-
             for chatter in serverMain.chattersOnlineList:
                 chatterlist.append( {'name':str(chatter.username), 'primColor':str(chatter.primaryColor), 'secColor':str(chatter.secondaryColor), 'inChat':str(chatter.isChatting)} )
             dat = chatterlist
             res = "update"
+            print(dat)
 
         elif req["Selector"] == "CHATLOG":
             dat = serverMain.getChatConversation(req["reqUser"], req["targetUser"], req["SessToken"])
@@ -353,21 +355,24 @@ def checkAuthToken(token):
     print(res)
     return jsonify({'data':detail, 'result':res})
 
-@app.route('/api/color/<username>', methods=['GET'])
-def getColors(username):
+@app.route('/api/color/<token>', methods=['GET'])
+def getColors(token):
     print("Request for colors.")
 
-    userdata = sqlWrapper.readUserData
-
-
-
-@app.route('/api/colorupdate', methods=['PATCH'])
-def updateColors():
-    print("Request to update colors.")
-    
     req = request.json
-    result = ""
-    detail = serverMain.updateUserColors(req["Username"], req["SessToken"], req[""])
+    res = "failure"
+
+    username = serverMain.getUsernameBySessToken(token)
+
+    if username != None:
+        userdata = sqlWrapper.readUserData(username)
+        res = "success"
+        print(userdata)
+        return jsonify({'pCol':userdata[2], 'sCol':userdata[3], 'result':res})
+    else:
+        return jsonify({'data':"Failure to get user colors.", 'result':res})
+
+
 
 
 

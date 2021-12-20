@@ -3,9 +3,10 @@
         <h1 class="text-center">Chat With Anyone!</h1>
 
 
-        <div *ngIf="clientChatObject.selfUsername !== null">
-            <div *ngIf="clientChatObject.isChatting === false">
-                Available to chat: {{clientChatObject.chattersOnline - 1}}
+        <div *ngIf="clientChatObject.selfUsername !== null" class="col align-items-center">
+
+            <div *ngIf="clientChatObject.isChatting === false" id="chatter-box">
+                <div style="display: block;margin: auto;">Available to chat: {{clientChatObject.chattersOnline - 1}}</div>
                 <div id="online-chatters-box">
                     <span *ngFor="let chatter of clientChatObject.chatterList">
                         <button *ngIf="chatter.name !== clientChatObject.selfUsername" class="badge" [style.background-color]=chatter.secColor [style.color]=chatter.primColor>{{chatter.name}}</button>
@@ -14,14 +15,19 @@
                 </div>
             </div>
 
-            <div>
-                <label for="primary color" class="form-label">Primary Color</label>
-                <input type="color" class="form-control form-control-color" id="prim-color" value="#563d7c" title="Choose your color">
-                
-                <label for="secondary color" class="form-label">Secondary Color</label>
-                <input type="color" class="form-control form-control-color" id="sec-color" value="#563d7c" title="Choose your color">
+            <div class="color-picker-box" >
+                <div style="border: 1px solid red; display: flex; flex-direction: row">
+                    <span class="color-picker-subbox">
+                        <label for="primary color" class="form-label">Primary Color</label>
+                        <input type="color" #primcol class="form-control form-control-color" id="prim-color" value="primaryColorBuf" title="Choose your color">
+                    </span>
+                    <span class="color-picker-subbox">
+                        <label for="secondary color" class="form-label">Secondary Color</label>
+                        <input type="color" #seconcol class="form-control form-control-color" id="sec-color" value="secondaryColorBuf" title="Choose your color">
+                    </span>
+                </div>
 
-                <button class="btn btn-primary">Save Colors</button>
+                <button (click)="setColors(primcol.value, seconcol.value)" style="display:block;margin:8px auto 8px auto;" class="btn btn-primary">Save Colors</button>
             </div>
 
             <div *ngIf="clientChatObject.isChatting !== false" class="chat-box-wrapper">
@@ -46,6 +52,7 @@
                     </form>
                 </div>
             </div>
+
         </div>
 
     </main> 

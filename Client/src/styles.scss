@@ -14,3 +14,24 @@ html, body{
 .signin-but{
     margin-bottom: 0px !important; 
 }
+
+#chatter-box{
+    border: 1px blue solid;
+    width: 500px;
+    margin: auto;
+    border-radius: 20px;
+    padding: 15px 5px;
+}
+
+.color-picker-box{
+    display: inline-block;
+    border: 1px black solid;
+    border-radius: 5px;
+    margin: auto;
+}
+.color-picker-subbox{
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    margin: 8px;
+}
