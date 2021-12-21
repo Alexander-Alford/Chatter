@@ -3,35 +3,84 @@
 /* Importing Bootstrap SCSS file. */
 @import '~bootstrap/scss/bootstrap';
 
+$primColor: #eeebdd;
+$secColor: #810000;
+$tertColor: #630000;
+$quartColor: #1b1717;
+
 html, body{
     height: 100vh;
+    background: rgb(0,57,92);
+    background: linear-gradient(129deg, rgba(0,57,92,1) 0%, rgba(13,11,83,1) 43%, rgba(13,12,14,1) 95%);
 }
 
 #sign-in-page{
     max-width: 600px;
+    color: white;
+}
+#home-page{
+    color: white;
+    max-width: 1000px;
 }
 
 .signin-but{
     margin-bottom: 0px !important; 
 }
 
+#chat-page{
+    color: white;
+}
+#chat-refresh-but{
+    position: absolute;
+    left: 8px;
+    top: 14px;
+    border: none;
+    background: $quartColor;
+    color: white;
+    padding: 0px;
+
+    &:active{
+        color:grey;
+    }
+}
 #chatter-box{
-    border: 1px blue solid;
-    width: 500px;
-    margin: auto;
+    background: $quartColor;
+    width: 400px;
+    margin: 20px auto;
     border-radius: 20px;
     padding: 15px 5px;
 }
+.chatter-button{
+    display: block;
+    margin: auto;
+    border: none;
+    border-radius: 15px;
+    font-size: 20px;
+    min-width: 200px;
+}
 
 .color-picker-box{
+    background: $primColor;
     display: inline-block;
-    border: 1px black solid;
+    color: black;
+    font-size: 17px;
+    font-weight: 600;
+    //border: 1px black solid;
     border-radius: 5px;
-    margin: auto;
+    margin: 15px auto;
 }
 .color-picker-subbox{
     display: flex; 
     flex-direction: column; 
     align-items: center;
     margin: 8px;
+    width: 100px;
+}
+.color-alert{
+    padding: 3px; 
+    margin: 0px auto 8px auto;
+    text-align: center;
+    font-weight: 500;
+    font-size: 13px;
+    display: block;
 }

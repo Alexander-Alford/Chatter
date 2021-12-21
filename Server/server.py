@@ -155,6 +155,10 @@ class ServerSession:
                     if len(priCol) == 7 and len(secCol) == 7:
                         sqlWrapper.updatePrimaryColor(username, priCol)
                         sqlWrapper.updateSecondaryColor(username, secCol)
+                        for chatter in self.chattersOnlineList:
+                            if chatter.username == username:
+                                chatter.primaryColor = priCol
+                                chatter.secondaryColor = secCol
                         return True
                     else:
                         return "Error, bad color values."

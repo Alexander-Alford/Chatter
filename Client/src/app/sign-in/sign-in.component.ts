@@ -12,7 +12,7 @@ export class SignInComponent implements OnInit{
 
   public usernameSubmit: string | null = "";
   public passwordSubmit: string | null = "";
-  public isLoggedIn: boolean = false;
+  public isLoggedIn: boolean | null = null;
   public APIresultMessage: string | null = null;
   public lastAPIresult: "success" | "failure" | null = null;
 
@@ -31,7 +31,6 @@ export class SignInComponent implements OnInit{
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) {
       const buf = parts.pop()!.split(';').shift()
-      console.log(buf)
       if (buf === undefined){
         return null;
       }

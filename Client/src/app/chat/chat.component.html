@@ -1,33 +1,45 @@
-<div class="row justify-content-center"> 
+<div class="row justify-content-center" id="chat-page"> 
     <main>   
-        <h1 class="text-center">Chat With Anyone!</h1>
+        <h1 class="text-center" >Chat With Anyone!</h1>
 
+        <h1 *ngIf="getCookie('SessToken') === null" class="text-center" style="margin-top: 200px;">
+            Log on to chat with others!
+        </h1>
 
-        <div *ngIf="clientChatObject.selfUsername !== null" class="col align-items-center">
+        <div *ngIf="clientChatObject.selfUsername !== null" style="display: flex; flex-direction: column;" class="col align-items-center justify-content-center">
 
             <div *ngIf="clientChatObject.isChatting === false" id="chatter-box">
-                <div style="display: block;margin: auto;">Available to chat: {{clientChatObject.chattersOnline - 1}}</div>
+                <span style="position: relative;">
+                    <button (click)="getChatterList()" id="chat-refresh-but"><i class="fas fa-redo fa-lg"></i></button>
+                </span>  
+                <div style="display: block;margin: auto; text-align: center; font-size: 20px;">
+                    Available to chat
+                </div>
+                <div style="display: block;margin: auto; text-align: center; font-size: 38px;">
+                    {{clientChatObject.chattersOnline - 1}}
+                </div>
                 <div id="online-chatters-box">
-                    <span *ngFor="let chatter of clientChatObject.chatterList">
-                        <button *ngIf="chatter.name !== clientChatObject.selfUsername" class="badge" [style.background-color]=chatter.secColor [style.color]=chatter.primColor>{{chatter.name}}</button>
+                    <span *ngFor="let chatter of clientChatObject.chatterList" style="display: block; margin-bottom: 5px;">
+                        <button *ngIf="chatter.name !== clientChatObject.selfUsername" class="chatter-button" [style.background-color]=chatter.secColor [style.color]=chatter.primColor>{{chatter.name}}</button>
                     </span>
                     
                 </div>
             </div>
 
-            <div class="color-picker-box" >
-                <div style="border: 1px solid red; display: flex; flex-direction: row">
+            <div class="color-picker-box">
+                <div style="display: flex; flex-direction: row">
                     <span class="color-picker-subbox">
-                        <label for="primary color" class="form-label">Primary Color</label>
+                        <label for="primary color" class="form-label">Text</label>
                         <input type="color" #primcol class="form-control form-control-color" id="prim-color" value="primaryColorBuf" title="Choose your color">
                     </span>
                     <span class="color-picker-subbox">
-                        <label for="secondary color" class="form-label">Secondary Color</label>
+                        <label for="secondary color" class="form-label">Background</label>
                         <input type="color" #seconcol class="form-control form-control-color" id="sec-color" value="secondaryColorBuf" title="Choose your color">
                     </span>
                 </div>
 
                 <button (click)="setColors(primcol.value, seconcol.value)" style="display:block;margin:8px auto 8px auto;" class="btn btn-primary">Save Colors</button>
+                <div *ngIf="colorUpdateResponse !== null && colorUpdateResponse.result === 'success'" class="alert alert-success color-alert" role="alert" >Colors updated successfully!</div>
             </div>
 
             <div *ngIf="clientChatObject.isChatting !== false" class="chat-box-wrapper">

@@ -33,6 +33,7 @@ export class ChatComponent implements OnInit {
 
   public primaryColorBuf: string = "#000000";
   public secondaryColorBuf: string = "#FFFFFF";
+  public colorUpdateResponse: any | null = null;
 
 
   public clientChatObject: Chat = {
@@ -45,9 +46,7 @@ export class ChatComponent implements OnInit {
   };  
 
   public setPriCol(col: string){
-    console.log(this.primaryColorBuf)
     this.primaryColorBuf = col;
-    console.log(this.primaryColorBuf)
   }
 
   public setSecCol(col: string){
@@ -59,7 +58,6 @@ export class ChatComponent implements OnInit {
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) {
       const buf = parts.pop()!.split(';').shift()
-      console.log(buf)
       if (buf === undefined){
         return null;
       }
@@ -109,6 +107,8 @@ export class ChatComponent implements OnInit {
   
     this.clientChatObject.chatterList = response.data;
     this.clientChatObject.chattersOnline = this.clientChatObject.chatterList.length;
+
+    //setTimeout(()=>{this.getChatterList()} ,1000)
   }
 
   public async getColors(){
@@ -153,8 +153,8 @@ export class ChatComponent implements OnInit {
     .then((response) => response.json())
     .then((data) => response = data)
 
-
-
+    this.colorUpdateResponse = response;
+    setTimeout(()=>{this.colorUpdateResponse = null}, 15000);
   }
 
   ngOnInit(): void {
