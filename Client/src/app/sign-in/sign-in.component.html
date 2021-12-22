@@ -20,7 +20,7 @@
                        <button class="btn btn-primary mb-3 signin-but col-6" (click)="postUser( usernameSubmit, passwordSubmit, 'LOGIN')">Log In</button>
                        <button class="btn btn-primary mb-3 signin-but col-6" (click)="postUser( usernameSubmit, passwordSubmit, 'MAKE')">Make Account</button>
                     </span>
-                    <span *ngIf="isLoggedIn === true" class="vstack gap-2 container-fluid align-items-center">
+                    <span *ngIf="isLoggedIn === true" class="vstack gap-2 container-fluid align-items-center signoff-buttons">
                        <button type="button" class="btn btn-primary mb-3 btn-lg signin-but" style="width: 170px" (click)="deleteUser( usernameSubmit, getCookie('SessToken'), 'LOGOUT')">Log Out</button>
                        <button type="button" class="btn btn-danger mb-3 btn-lg signin-but" style="width: 170px" (click)="deleteUser( usernameSubmit, getCookie('SessToken'), 'DELETE')">Delete Account</button>
                     </span>

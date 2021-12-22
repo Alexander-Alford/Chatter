@@ -94,10 +94,6 @@ export class ChatComponent implements OnInit {
 
   public async getChatterList(){
 
-    const request: Object = {
-      Selector: "CHATTERLIST"
-    };
-
     let response: any = null;
 
     await fetch("http://127.0.0.1:500/api/chatroom")
@@ -107,6 +103,32 @@ export class ChatComponent implements OnInit {
   
     this.clientChatObject.chatterList = response.data;
     this.clientChatObject.chattersOnline = this.clientChatObject.chatterList.length;
+
+    //setTimeout(()=>{this.getChatterList()} ,1000)
+  }
+
+  public async getChatLog(){
+
+    const request: Object = {
+      reqUser: this.clientChatObject.selfUsername,
+      targetUser: this.clientChatObject.secondChatter,
+      Selector: "CHATLOG",
+      SessToken: this.getCookie("SessToken")
+    };
+
+    let response: any = null;
+
+    await fetch("http://127.0.0.1:500/api/chatroom",
+    {
+      method: 'POST',
+      body: JSON.stringify(request),
+      headers: {'Content-Type': 'application/json; charset=UTF-8'} 
+    })
+    .then((response) => response.json())
+    .then((data) => response = data)
+  
+  
+    this.clientChatObject.messageList = response.data;
 
     //setTimeout(()=>{this.getChatterList()} ,1000)
   }

@@ -221,7 +221,7 @@ sqlWrapper.showTable("chatlog")
 
 
 
-
+#Route for logging in/out and creating/deleting accounts.
 @app.route('/api/signin', methods=['POST', 'DELETE'])
 def handleSignInRoute():
     try:
@@ -244,7 +244,6 @@ def handleSignInRoute():
                 res = 'failure'
 
         elif req["Selector"] == "MAKE":
-            #print("Make request.")
             if serverMain.addNewUser(req["Username"], req["Password"]) == True:
                 detail = 'User created successfully.'
                 res = 'success'
@@ -253,9 +252,7 @@ def handleSignInRoute():
                 res = 'failure'
 
         elif req["Selector"] == "LOGOUT":
-            #print("HERE0")
             if serverMain.userOnline(req["Username"]) == True:
-                #print("HERE1")
                 if serverMain.handleLogOff(req["Username"], req["SessToken"]) == True:
                     detail = 'User successfully logged out.'
                     res = 'success'
@@ -268,13 +265,9 @@ def handleSignInRoute():
         
         elif req["Selector"] == "DELETE":
             if serverMain.userOnline(req["Username"]) == True:
-                #print("HERE")
                 detail = serverMain.deleteUser(req["Username"], req["SessToken"])
-                #print("HERE1")
                 if detail == True:
-                    #print("HERE2")
                     serverMain.handleLogOff(req["Username"], req["SessToken"])
-                   # print("HERE3")
                     detail = "User successfully deleted."
                     res = "success"
                 else:
@@ -287,7 +280,8 @@ def handleSignInRoute():
 
     except:
         return "Error!"
-    
+
+#Routing for updating user colors.    
 @app.route('/api/account', methods=['PATCH'])
 def handleColorUpdate():
     
@@ -311,6 +305,7 @@ def handleColorUpdate():
     except:
         return "Error!"
 
+#Routing for getting chatters online and getting conversation data.
 @app.route('/api/chatroom', methods=['GET', 'POST'])
 def manageChat():
     print('Hit on the chatroom api.')
@@ -331,8 +326,11 @@ def manageChat():
             print(dat)
 
         elif req["Selector"] == "CHATLOG":
-            dat = serverMain.getChatConversation(req["reqUser"], req["targetUser"], req["SessToken"])
-            if isinstance(dat, list):
+            buf = serverMain.getChatConversation(req["reqUser"], req["targetUser"], req["SessToken"])
+            if isinstance(buf, list):
+                dat = []
+                for message in buf:
+                    dat.append( {'author':str(buf[0]) , 'content':str(buf[2]) , 'time':str(buf[3])} )
                 res = "success"
             else:
                 res = "failure"
@@ -344,6 +342,7 @@ def manageChat():
     except:
         return "Error!"
 
+#Route for checking auth token on server.
 @app.route('/api/authcheck/<token>', methods=['GET'])
 def checkAuthToken(token):
     print("Request to check auth token.")
@@ -359,6 +358,7 @@ def checkAuthToken(token):
     print(res)
     return jsonify({'data':detail, 'result':res})
 
+#Route for getting client user color data.
 @app.route('/api/color/<token>', methods=['GET'])
 def getColors(token):
     print("Request for colors.")

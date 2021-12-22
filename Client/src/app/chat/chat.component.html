@@ -2,7 +2,7 @@
     <main>   
         <h1 class="text-center" >Chat With Anyone!</h1>
 
-        <h1 *ngIf="getCookie('SessToken') === null" class="text-center" style="margin-top: 200px;">
+        <h1 *ngIf="clientChatObject.selfUsername === null" class="text-center" style="margin-top: 200px;">
             Log on to chat with others!
         </h1>
 
