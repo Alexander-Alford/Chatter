@@ -196,19 +196,39 @@ class ServerSession:
                     #If someone is looking to chat with reqUser and they are the receiving user of this call.
                     if chatReq.receiver == reqUser and chatReq.requester == recUser:
                         chatReq.receiveToken = reqToken
-                        return "Chat between %s and %s started."%(recUser, reqUser)
+                        return (True, "Chat between %s and %s started."%(recUser, reqUser))
                     #Change other chat request by same user if it exists and isn't an ongoing chat.
                     elif chatReq.requester == reqUser and chatReq.receiveToken == None:
                         chatReq.receiver = recUser
-                        return "Chat invite by %s for another user has changed to be with %s"%(reqUser, recUser)
+                        return (True, "Chat invite by %s has changed to be with %s"%(reqUser, recUser))
                 #If no one is trying to chat with reqUser and he has no outgoing invites, add a new invite to the chatrequest list and return true.
                 self.chatrequests.append( ChatRequest(reqUser, recUser, reqToken, None) )
-                return True
+                return (True, "Chat request for %s by %s created."%(recUser, reqUser))
             else:
-                return "Error! User authentication failed."
+                return (False, "Error! User authentication failed.")
         else:
-            return "Error! Offline users cannot start chats."
+            return (False, "Error! Offline users cannot start chats.")
+
+    def cancelChatRequest(self, reqUser, reqToken):
+        if self.getUserToken(reqUser) == reqToken:
+            u = -1
+            for chatReq in self.chatrequests:
+                u = u + 1
+                if chatReq.requester == reqUser:
+                    self.chatrequests.pop(u)
+                    return (True, "User %s's chat request has been canceled."%reqUser)
+            return (False, "Error. User %s has no chat requests."%reqUser)
+        else:
+            return (False, "Error! User authentication failed.")
     
+    def checkChatRequest(self, reqUser, reqToken):
+        if self.getUserToken(reqUser) == reqToken:
+            for chatReq in self.chatrequests:
+                if chatReq.requester == reqUser and chatReq.receiveToken != None and chatReq.receiveToken == self.getUserToken(chatReq.receiver):
+                    return (True, "Chat between %s and %s has been started."%(reqUser, chatReq.receiver))
+            return (False, "No chat for %s has been started."%reqUser)    
+        else:
+            return (False, "Error! User authentication failed.")
 
 
     
@@ -291,9 +311,9 @@ def handleColorUpdate():
     detail = 'null'
     res = 'null'
 
-    username = serverMain.getUsernameBySessToken(req["SessToken"])
-
+    
     try:
+        username = serverMain.getUsernameBySessToken(req["SessToken"])
         detail = serverMain.updateUserColors(username, req["SessToken"], req["PrimaryColor"], req["SecondaryColor"])
         if detail == True:
             detail = "Colors updated to %s and %s"%(req["PrimaryColor"], req["SecondaryColor"])
@@ -314,7 +334,7 @@ def manageChat():
     res = 'null'
     dat = 'null'
 
-    print(req)
+    #print(req)
 
     try:
         if req == None:
@@ -334,7 +354,29 @@ def manageChat():
                 res = "success"
             else:
                 res = "failure"
-        
+
+        elif req["Selector"] == "CHATREQUEST":
+            buf = serverMain.handleChatRequest(req["reqUser"], req["reqToken"], req["recUser"])
+            dat = buf[1]
+            res = "failure"
+            if buf[0] == True:
+                res = "success"
+
+        elif req["Selector"] == "CHATREQCANCEL":
+            buf = serverMain.cancelChatRequest(req["reqUser"], req["reqToken"])
+            dat = buf[1]
+            res = "failure"
+            if buf[0] == True:
+                res = "success"
+
+        elif req["Selector"] == "CHATCHECK":
+            print("TEST1")
+            buf = serverMain.checkChatRequest(req["reqUser"], req["reqToken"])
+            print("TEST2")
+            dat = buf[1]
+            res = "failure"
+            if buf[0] == True:
+                res = "success"
         
 
         return jsonify({'data':dat, 'result':res})
@@ -345,36 +387,44 @@ def manageChat():
 #Route for checking auth token on server.
 @app.route('/api/authcheck/<token>', methods=['GET'])
 def checkAuthToken(token):
-    print("Request to check auth token.")
+    try:
+        print("Request to check auth token.")
 
-    res = "failure"
-    detail = "No user with auth token."
-    name = serverMain.getUsernameBySessToken(token)
+        res = "failure"
+        detail = "No user with auth token."
+        name = serverMain.getUsernameBySessToken(token)
 
-    if name != None:
-        res = "success"
-        detail = name
+        if name != None:
+            res = "success"
+            detail = name
 
-    print(res)
-    return jsonify({'data':detail, 'result':res})
+        print(res)
+        return jsonify({'data':detail, 'result':res})
+    
+    except:
+        return "Error!"
 
 #Route for getting client user color data.
 @app.route('/api/color/<token>', methods=['GET'])
 def getColors(token):
-    print("Request for colors.")
+    try:
+        print("Request for colors.")
 
-    req = request.json
-    res = "failure"
+        req = request.json
+        res = "failure"
 
-    username = serverMain.getUsernameBySessToken(token)
+        username = serverMain.getUsernameBySessToken(token)
 
-    if username != None:
-        userdata = sqlWrapper.readUserData(username)
-        res = "success"
-        print(userdata)
-        return jsonify({'pCol':userdata[2], 'sCol':userdata[3], 'result':res})
-    else:
-        return jsonify({'data':"Failure to get user colors.", 'result':res})
+        if username != None:
+            userdata = sqlWrapper.readUserData(username)
+            res = "success"
+            print(userdata)
+            return jsonify({'pCol':userdata[2], 'sCol':userdata[3], 'result':res})
+        else:
+            return jsonify({'data':"Failure to get user colors.", 'result':res})
+
+    except:
+        return "Error!"        
 
 
 

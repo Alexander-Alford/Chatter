@@ -133,6 +133,39 @@ export class ChatComponent implements OnInit {
     //setTimeout(()=>{this.getChatterList()} ,1000)
   }
 
+  public async sendChatRequest(targetuser: string){
+
+    const request: Object = {
+      reqUser: this.clientChatObject.selfUsername,
+      recUser: targetuser,
+      Selector: "CHATREQUEST",
+      reqToken: this.getCookie("SessToken")
+    };
+
+    let response: any = null;
+
+    await fetch("http://127.0.0.1:500/api/chatroom",
+    {
+      method: 'POST',
+      body: JSON.stringify(request),
+      headers: {'Content-Type': 'application/json; charset=UTF-8'} 
+    })
+    .then((response) => response.json())
+    .then((data) => response = data)
+  
+    if(response.result === "success"){
+      let targetchatter = null;
+      this.clientChatObject.chatterList.forEach(chatter => {
+        if(chatter.name === targetuser){
+          targetchatter = chatter;
+        }
+      });
+
+      console.log(targetchatter)
+      this.clientChatObject.secondChatter = targetchatter;
+    }
+  }
+
   public async getColors(){
 
     let filteredtoken = this.getCookie("SessToken");

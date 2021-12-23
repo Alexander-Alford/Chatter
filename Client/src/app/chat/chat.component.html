@@ -8,7 +8,7 @@
 
         <div *ngIf="clientChatObject.selfUsername !== null" style="display: flex; flex-direction: column;" class="col align-items-center justify-content-center">
 
-            <div *ngIf="clientChatObject.isChatting === false" id="chatter-box">
+            <div *ngIf="clientChatObject.isChatting === false && clientChatObject.secondChatter === null" id="chatter-box">
                 <span style="position: relative;">
                     <button (click)="getChatterList()" id="chat-refresh-but"><i class="fas fa-redo fa-lg"></i></button>
                 </span>  
@@ -20,13 +20,13 @@
                 </div>
                 <div id="online-chatters-box">
                     <span *ngFor="let chatter of clientChatObject.chatterList" style="display: block; margin-bottom: 5px;">
-                        <button *ngIf="chatter.name !== clientChatObject.selfUsername" class="chatter-button" [style.background-color]=chatter.secColor [style.color]=chatter.primColor>{{chatter.name}}</button>
+                        <button *ngIf="chatter.name !== clientChatObject.selfUsername" (click)="sendChatRequest(chatter.name)" class="chatter-button" [style.background-color]=chatter.secColor [style.color]=chatter.primColor>{{chatter.name}}</button>
                     </span>
                     
                 </div>
             </div>
 
-            <div class="color-picker-box">
+            <div *ngIf="clientChatObject.isChatting === false && clientChatObject.secondChatter === null" class="color-picker-box">
                 <div style="display: flex; flex-direction: row">
                     <span class="color-picker-subbox">
                         <label for="primary color" class="form-label">Text</label>
@@ -40,6 +40,10 @@
 
                 <button (click)="setColors(primcol.value, seconcol.value)" style="display:block;margin:8px auto 8px auto;" class="btn btn-primary">Save Colors</button>
                 <div *ngIf="colorUpdateResponse !== null && colorUpdateResponse.result === 'success'" class="alert alert-success color-alert" role="alert" >Colors updated successfully!</div>
+            </div>
+
+            <div *ngIf="clientChatObject.isChatting === false && clientChatObject.secondChatter !== null">
+                LOAD BOX
             </div>
 
             <div *ngIf="clientChatObject.isChatting !== false" class="chat-box-wrapper">
