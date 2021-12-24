@@ -52,7 +52,7 @@ class Chatter:
         self.username = name
         self.authenticationToken = authToken
         self.isChatting = False
-        self.chattingWith = None
+        #self.chattingWith = None
         self.timeToLive = 1800
     
 class ChatRequest:
@@ -189,46 +189,86 @@ class ServerSession:
                 return chatter.username
         return None
     
+    def setUserChatStatus(self, user, status):
+        for chatter in self.chatterlist:
+            if chatter.username == user:
+                chatter.isChatting = status
+                return
+
+    #Creates a chat request for a user or matches them with the user they want to chat with.
     def handleChatRequest(self, reqUser, reqToken, recUser):
-        if self.userOnline(reqUser) == True or self.userOnline(recUser):
+        #Make sure both users are online
+        if self.userOnline(reqUser) == True and self.userOnline(recUser) == True:
+            #Authenticate person trying to make the request
             if self.getUserToken(reqUser) == reqToken:
                 for chatReq in self.chatrequests:
-                    #If someone is looking to chat with reqUser and they are the receiving user of this call.
-                    if chatReq.receiver == reqUser and chatReq.requester == recUser:
-                        chatReq.receiveToken = reqToken
-                        return (True, "Chat between %s and %s started."%(recUser, reqUser))
-                    #Change other chat request by same user if it exists and isn't an ongoing chat.
+                    if chatReq.requester == recUser:
+                        #Start a call if someone is looking to chat with the chat requester and they are the receiving user of the call.
+                        if chatReq.receiver == reqUser:
+                            chatReq.receiveToken = reqToken
+                            self.setUserChatStatus(reqUser, True)
+                            return (True, "Chat between %s and %s started."%(recUser, reqUser))
+                        #Return a failure as the receiving user is already in a chat.
+                        else:
+                            return (False, "The receiving user %s is already in a chat with %s."%(recUser, chatReq.receiver))
+                    #Change requesting user's preceding chat request if it exists and isn't an ongoing chat to requesting a different user.
                     elif chatReq.requester == reqUser and chatReq.receiveToken == None:
                         chatReq.receiver = recUser
                         return (True, "Chat invite by %s has changed to be with %s"%(reqUser, recUser))
-                #If no one is trying to chat with reqUser and he has no outgoing invites, add a new invite to the chatrequest list and return true.
+                #No matching receiver with requester, no preceding requester invite, recieving user is not chatting.
                 self.chatrequests.append( ChatRequest(reqUser, recUser, reqToken, None) )
+                self.setUserChatStatus(reqUser, True)
                 return (True, "Chat request for %s by %s created."%(recUser, reqUser))
             else:
                 return (False, "Error! User authentication failed.")
         else:
             return (False, "Error! Offline users cannot start chats.")
 
+    #Cancels a user's chat requests or ends the chat the requester is in.
     def cancelChatRequest(self, reqUser, reqToken):
         if self.getUserToken(reqUser) == reqToken:
             u = -1
             for chatReq in self.chatrequests:
                 u = u + 1
+                #Cancel chat/chat request if the requester is the requesting user. 
                 if chatReq.requester == reqUser:
                     self.chatrequests.pop(u)
+                    self.setUserChatStatus(reqUser, False)
+                    #Set receiving user's chat status to false as the chat has ended.
+                    if chatReq.receiveToken != None:
+                        self.setUserChatStatus(chatReq.receiver, False)
+                        return (True, "User %s's chat with %s has been ended."%(reqUser, chatReq.receiver))
                     return (True, "User %s's chat request has been canceled."%reqUser)
+                #Cancel ongoing chat if the requesting user is a receiver and is currently in an active chat.
+                elif chatReq.receiver == reqUser and chatReq.receiveToken != None:
+                    self.chatrequests.pop(u)
+                    self.setUserChatStatus(reqUser, False)
+                    self.setUserChatStatus(chatReq.requester, False)
+                    return (True, "User %s's chat with %s has ended at %s's request."%(chatReq.requester, reqUser, reqUser))
+
             return (False, "Error. User %s has no chat requests."%reqUser)
         else:
             return (False, "Error! User authentication failed.")
     
-    def checkChatRequest(self, reqUser, reqToken):
+
+    def checkUserChatStatus(self, reqUser, reqToken):
+        #Authenticate checking user.
         if self.getUserToken(reqUser) == reqToken:
             for chatReq in self.chatrequests:
-                if chatReq.requester == reqUser and chatReq.receiveToken != None and chatReq.receiveToken == self.getUserToken(chatReq.receiver):
-                    return (True, "Chat between %s and %s has been started."%(reqUser, chatReq.receiver))
-            return (False, "No chat for %s has been started."%reqUser)    
+                if chatReq.requester == reqUser:
+                    if chatReq.receiveToken != None:
+                        return ("chat", chatReq.receiver, "Chat between %s and %s."%(reqUser, chatReq.receiver))
+                    else:
+                        return ("request", chatReq.receiver, "Chat request by %s for %s."%(reqUser, chatReq.receiver))
+                elif chatReq.receiver == reqUser:
+                    if chatReq.receiveToken != None:
+                        return ("chat", chatReq.requester, "Chat between %s and %s."%(reqUser, chatReq.requester))
+                    else:
+                        return ("requested", chatReq.requester, "Chat request by %s for %s."%(chatReq.requester, reqUser))
+            
+            return (False, None, "No chat/chat requests for %s have been started."%reqUser)    
         else:
-            return (False, "Error! User authentication failed.")
+            return (False, None, "Error! User authentication failed.")
 
 
     
@@ -370,10 +410,9 @@ def manageChat():
                 res = "success"
 
         elif req["Selector"] == "CHATCHECK":
-            print("TEST1")
-            buf = serverMain.checkChatRequest(req["reqUser"], req["reqToken"])
-            print("TEST2")
+            buf = serverMain.checkUserChatStatus(req["reqUser"], req["reqToken"])
             dat = buf[1]
+            
             res = "failure"
             if buf[0] == True:
                 res = "success"
